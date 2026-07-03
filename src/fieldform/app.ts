@@ -19,6 +19,7 @@ import { templatesScreen } from './screens/templates-screen'
 import { templateDetailScreen } from './screens/template-detail-screen'
 import { docScreen, type Step } from './screens/doc-screen'
 import { confirmModal } from './components/confirm-modal'
+import { uploadModal } from './components/upload-modal'
 
 type Screen = 'templates' | 'detail' | 'doc'
 
@@ -37,6 +38,7 @@ interface AppState {
   confirmRemoveTemplateId: string | null
   confirmClearSignatures: boolean
   printCompact: boolean
+  uploadModalOpen: boolean
 }
 
 function firstTitleValue(docText: string, values: Values): string {
@@ -72,6 +74,7 @@ export function mount(rootEl: HTMLElement) {
     confirmRemoveTemplateId: null,
     confirmClearSignatures: false,
     printCompact: false,
+    uploadModalOpen: false,
   }
   let sigHost: SignaturePadHost
 
@@ -169,19 +172,31 @@ export function mount(rootEl: HTMLElement) {
 
   const startNew = (t: Template) => openDoc(t.docText, {}, null, null, t.id)
 
+  function createTemplateFromText(text: string, fallback: string | null) {
+    const t: Template = { id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: fallback || 'Modelo colado', docText: text, createdAt: Date.now() }
+    void putTemplate(t).then((templates) => setState({ templates: [...BUILTIN_TEMPLATES, ...templates] }))
+    openDoc(t.docText, {}, null, fallback, t.id)
+    setState({ uploadModalOpen: false })
+  }
+
   const onUpload = (e: Event) => {
     const input = e.target as HTMLInputElement
     const f = input.files && input.files[0]
     if (!f) return
     const fallback = f.name.replace(/\.[^.]+$/, '')
     const r = new FileReader()
-    r.onload = () => {
-      const t: Template = { id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: fallback, docText: String(r.result), createdAt: Date.now() }
-      void putTemplate(t).then((templates) => setState({ templates: [...BUILTIN_TEMPLATES, ...templates] }))
-      openDoc(t.docText, {}, null, fallback, t.id)
-    }
+    r.onload = () => createTemplateFromText(String(r.result), fallback)
     r.readAsText(f)
     input.value = ''
+  }
+
+  const onPasteFromClipboard = () => {
+    void navigator.clipboard
+      .readText()
+      .then((text) => {
+        if (text.trim()) createTemplateFromText(text, null)
+      })
+      .catch(() => {})
   }
 
   const doPrint = () => window.print()
@@ -323,10 +338,7 @@ export function mount(rootEl: HTMLElement) {
             <div class="navbar-end flex-none gap-2">
               ${screen !== 'templates' ? html`<button class="btn btn-ghost btn-sm" @click=${goTemplates}>Modelos</button>` : nothing}
               ${screen === 'doc'
-                ? html`<label class="btn btn-ghost btn-sm">
-                    Enviar
-                    <input type="file" class="hidden" accept=".md,.markdown,.txt,text/markdown,text/plain" @change=${onUpload} />
-                  </label>`
+                ? html`<button class="btn btn-ghost btn-sm" @click=${() => setState({ uploadModalOpen: true })}>Enviar</button>`
                 : nothing}
             </div>
           </div>
@@ -335,7 +347,7 @@ export function mount(rootEl: HTMLElement) {
             ? templatesScreen({
                 templates: state.templates,
                 history: state.history,
-                onUpload,
+                onOpenUploadModal: () => setState({ uploadModalOpen: true }),
                 onSelectTemplate: selectTemplate,
                 onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
               })
@@ -347,7 +359,7 @@ export function mount(rootEl: HTMLElement) {
                   return templatesScreen({
                     templates: state.templates,
                     history: state.history,
-                    onUpload,
+                    onOpenUploadModal: () => setState({ uploadModalOpen: true }),
                     onSelectTemplate: selectTemplate,
                     onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
                   })
@@ -401,6 +413,13 @@ export function mount(rootEl: HTMLElement) {
                 confirmLabel: 'Limpar',
                 onConfirm: clearAllSignatures,
                 onCancel: () => setState({ confirmClearSignatures: false }),
+              })
+            : nothing}
+          ${state.uploadModalOpen
+            ? uploadModal({
+                onUpload,
+                onPasteFromClipboard,
+                onCancel: () => setState({ uploadModalOpen: false }),
               })
             : nothing}
         </div>

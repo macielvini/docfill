@@ -6,7 +6,7 @@ import { card } from '../components/card'
 export interface TemplatesScreenProps {
   templates: Template[]
   history: HistoryEntry[]
-  onUpload: (e: Event) => void
+  onOpenUploadModal: () => void
   onSelectTemplate: (id: string) => void
   onRemoveTemplate: (id: string) => void
 }
@@ -18,10 +18,7 @@ export function templatesScreen(props: TemplatesScreenProps): TemplateResult {
       <p class="text-[13.5px] leading-relaxed text-base-content/60">Escolha um modelo para preencher ou envie um novo arquivo Markdown.</p>
     </div>
 
-    <label class="btn btn-outline btn-sm btn-primary">
-      Enviar novo modelo
-      <input type="file" class="hidden" accept=".md,.markdown,.txt,text/markdown,text/plain" @change=${props.onUpload} />
-    </label>
+    <button class="btn btn-outline btn-sm btn-primary" @click=${props.onOpenUploadModal}>Enviar novo modelo</button>
 
     <div class="flex flex-col gap-2">
       ${repeat(

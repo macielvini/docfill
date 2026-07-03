@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: nord --default;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+.print-sheet {
+  display: none;
+}
+@media print {
+  .app-shell {
+    display: none !important;
+  }
+  .print-sheet {
+    display: block !important;
+  }
+  @page {
+    margin: 0.85in;
+  }
+  body {
+    background: #fff;
+  }
+}

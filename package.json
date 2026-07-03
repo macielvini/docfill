@@ -1,0 +1,21 @@
+{
+  "name": "docfill",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "daisyui": "^5.6.10",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "lit-html": "^3.3.3",
+    "tailwindcss": "^4.3.2"
+  }
+}

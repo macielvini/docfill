@@ -1,7 +1,9 @@
 import { html, nothing, type TemplateResult } from 'lit-html'
 import { repeat } from 'lit-html/directives/repeat.js'
+import { ref } from 'lit-html/directives/ref.js'
 import type { Template, HistoryEntry } from '../history'
 import { card } from '../components/card'
+import { icon } from '../icons'
 
 export interface TemplatesScreenProps {
   templates: Template[]
@@ -9,6 +11,10 @@ export interface TemplatesScreenProps {
   onOpenUploadModal: () => void
   onSelectTemplate: (id: string) => void
   onRemoveTemplate: (id: string) => void
+  editingTemplateId: string | null
+  onStartRenameTemplate: (id: string) => void
+  onConfirmRenameTemplate: (id: string, title: string) => void
+  onCancelRenameTemplate: () => void
 }
 
 export function templatesScreen(props: TemplatesScreenProps): TemplateResult {
@@ -26,26 +32,61 @@ export function templatesScreen(props: TemplatesScreenProps): TemplateResult {
         (t) => t.id,
         (t) => {
           const count = props.history.filter((h) => h.templateId === t.id).length
-          const removable = t.id !== 'sample'
+          const editing = props.editingTemplateId === t.id
           return card(
-            html`<div class="flex items-center gap-2">
-              <button class="flex min-w-0 flex-1 flex-col gap-0.5 text-left" @click=${() => props.onSelectTemplate(t.id)}>
-                <span class="text-sm font-semibold">${t.title}</span>
-                <span class="text-[11px] text-base-content/60">${count} preenchimento${count === 1 ? '' : 's'}</span>
-              </button>
-              ${removable
-                ? html`<button
-                    class="btn btn-ghost btn-sm btn-circle flex-none"
+            editing
+              ? html`<div class="flex items-center gap-2">
+                  <input
+                    class="input input-sm min-w-0 flex-1"
+                    .value=${t.title}
+                    @click=${(e: Event) => e.stopPropagation()}
+                    @blur=${() => setTimeout(() => props.onCancelRenameTemplate())}
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (e.key === 'Enter') props.onConfirmRenameTemplate(t.id, (e.target as HTMLInputElement).value)
+                      if (e.key === 'Escape') props.onCancelRenameTemplate()
+                    }}
+                    ${ref((el) => {
+                      if (el instanceof HTMLInputElement) queueMicrotask(() => el.isConnected && el.focus())
+                    })}
+                  />
+                  <button
+                    class="btn btn-ghost btn-sm btn-square flex-none"
+                    @mousedown=${(e: Event) => e.preventDefault()}
+                    @click=${(e: Event) => {
+                      const input = (e.currentTarget as HTMLElement).previousElementSibling as HTMLInputElement
+                      props.onConfirmRenameTemplate(t.id, input.value)
+                    }}
+                    title="Salvar"
+                  >
+                    ${icon('check')}
+                  </button>
+                </div>`
+              : html`<div class="flex items-center gap-2">
+                  <button class="flex min-w-0 flex-1 flex-col gap-0.5 text-left" @click=${() => props.onSelectTemplate(t.id)}>
+                    <span class="text-sm font-semibold">${t.title}</span>
+                    <span class="text-[11px] text-base-content/60">${count} preenchimento${count === 1 ? '' : 's'}</span>
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-sm btn-square flex-none"
+                    @click=${(e: Event) => {
+                      e.stopPropagation()
+                      props.onStartRenameTemplate(t.id)
+                    }}
+                    title="Renomear"
+                  >
+                    ${icon('text-cursor-input')}
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-sm btn-square flex-none"
                     @click=${(e: Event) => {
                       e.stopPropagation()
                       props.onRemoveTemplate(t.id)
                     }}
                     title="Remover"
                   >
-                    ×
-                  </button>`
-                : nothing}
-            </div>`,
+                    ${icon('trash-2')}
+                  </button>
+                </div>`,
           )
         },
       )}

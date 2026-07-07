@@ -3,6 +3,7 @@ import { repeat } from 'lit-html/directives/repeat.js'
 import { getFieldsFrom } from '../markers'
 import { relTime, type HistoryEntry } from '../history'
 import { card } from './card'
+import { icon } from '../icons'
 
 export interface HistoryListProps {
   entries: HistoryEntry[]
@@ -24,7 +25,7 @@ export function historyList(props: HistoryListProps): TemplateResult {
               <span class="truncate text-[13.5px] font-semibold">${h.title || 'Documento sem título'}</span>
               <span class="text-[11px] text-base-content/60">${relTime(h.updatedAt)} · ${filledN}/${fs.length} campos</span>
             </button>
-            <button class="btn btn-ghost btn-sm btn-circle flex-none" @click=${() => props.onRemove(h.id)} title="Remover">×</button>
+            <button class="btn btn-ghost btn-sm btn-square flex-none" @click=${() => props.onRemove(h.id)} title="Remover">${icon('trash-2')}</button>
           </div>`,
         )
       },

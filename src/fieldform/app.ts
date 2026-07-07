@@ -20,6 +20,7 @@ import { templateDetailScreen } from './screens/template-detail-screen'
 import { docScreen, type Step } from './screens/doc-screen'
 import { confirmModal } from './components/confirm-modal'
 import { uploadModal } from './components/upload-modal'
+import { renderIcons } from './icons'
 
 type Screen = 'templates' | 'detail' | 'doc'
 
@@ -39,6 +40,7 @@ interface AppState {
   confirmClearSignatures: boolean
   printCompact: boolean
   uploadModalOpen: boolean
+  editingTemplateId: string | null
 }
 
 function firstTitleValue(docText: string, values: Values): string {
@@ -75,6 +77,7 @@ export function mount(rootEl: HTMLElement) {
     confirmClearSignatures: false,
     printCompact: false,
     uploadModalOpen: false,
+    editingTemplateId: null,
   }
   let sigHost: SignaturePadHost
 
@@ -160,6 +163,24 @@ export function mount(rootEl: HTMLElement) {
     const list = await removeTemplateEntry(id)
     state = { ...state, templates: [...BUILTIN_TEMPLATES, ...list], confirmRemoveTemplateId: null }
     renderApp()
+  }
+
+  function startRenameTemplate(id: string) {
+    setState({ editingTemplateId: id })
+  }
+
+  function cancelRenameTemplate() {
+    if (state.editingTemplateId === null) return
+    setState({ editingTemplateId: null })
+  }
+
+  function confirmRenameTemplate(id: string, title: string) {
+    const t = state.templates.find((x) => x.id === id)
+    const trimmed = title.trim()
+    if (!t || !trimmed) return setState({ editingTemplateId: null })
+    void putTemplate({ ...t, title: trimmed }).then((templates) =>
+      setState({ templates: [...BUILTIN_TEMPLATES, ...templates], editingTemplateId: null }),
+    )
   }
 
   function goTemplates() {
@@ -350,6 +371,10 @@ export function mount(rootEl: HTMLElement) {
                 onOpenUploadModal: () => setState({ uploadModalOpen: true }),
                 onSelectTemplate: selectTemplate,
                 onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
+                editingTemplateId: state.editingTemplateId,
+                onStartRenameTemplate: startRenameTemplate,
+                onConfirmRenameTemplate: confirmRenameTemplate,
+                onCancelRenameTemplate: cancelRenameTemplate,
               })
             : nothing}
           ${screen === 'detail'
@@ -362,6 +387,10 @@ export function mount(rootEl: HTMLElement) {
                     onOpenUploadModal: () => setState({ uploadModalOpen: true }),
                     onSelectTemplate: selectTemplate,
                     onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
+                    editingTemplateId: state.editingTemplateId,
+                    onStartRenameTemplate: startRenameTemplate,
+                    onConfirmRenameTemplate: confirmRenameTemplate,
+                    onCancelRenameTemplate: cancelRenameTemplate,
                   })
                 return templateDetailScreen({
                   template: t,
@@ -435,6 +464,7 @@ export function mount(rootEl: HTMLElement) {
 
   function renderApp() {
     render(template(), rootEl)
+    renderIcons()
   }
 
   renderApp()

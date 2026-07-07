@@ -18,10 +18,10 @@ export function templateDetailScreen(props: TemplateDetailScreenProps): Template
     <button class="btn btn-ghost btn-sm -ml-2 w-fit gap-1" @click=${props.onBack}>← Voltar</button>
     <h1 class="text-[22px] font-bold tracking-tight">${t.title}</h1>
 
-    <button class="btn btn-primary" @click=${() => props.onStartNew(t)}>Novo documento</button>
+    <button class="btn btn-primary" @click=${() => props.onStartNew(t)}>Preencher</button>
 
     <div class="flex flex-col gap-2">
-      <div class="text-[11px] font-bold tracking-wide text-base-content/60 uppercase">Preenchimentos (${entries.length}/20)</div>
+      <div class="text-[11px] font-bold tracking-wide text-base-content/60 uppercase">Preenchimentos anteriormente (${entries.length}/20)</div>
       ${entries.length
         ? historyList({ entries, onOpen: props.onOpenHistory, onRemove: props.onRemoveHistory })
         : emptyState('Nenhum preenchimento ainda.')}

@@ -1,4 +1,4 @@
-import { html, nothing, type TemplateResult } from 'lit-html'
+import { html, type TemplateResult } from 'lit-html'
 import { repeat } from 'lit-html/directives/repeat.js'
 import { ref } from 'lit-html/directives/ref.js'
 import type { Template, HistoryEntry } from '../history'
@@ -8,7 +8,8 @@ import { icon } from '../icons'
 export interface TemplatesScreenProps {
   templates: Template[]
   history: HistoryEntry[]
-  onOpenUploadModal: () => void
+  onUpload: (e: Event) => void
+  onOpenPasteEditor: () => void
   onSelectTemplate: (id: string) => void
   onRemoveTemplate: (id: string) => void
   editingTemplateId: string | null
@@ -24,7 +25,14 @@ export function templatesScreen(props: TemplatesScreenProps): TemplateResult {
       <p class="text-[13.5px] leading-relaxed text-base-content/60">Escolha um modelo para preencher ou envie um novo arquivo Markdown.</p>
     </div>
 
-    <button class="btn btn-outline btn-sm btn-primary" @click=${props.onOpenUploadModal}>Enviar novo modelo</button>
+    <div class="flex gap-2">
+      <label class="btn btn-outline btn-sm btn-primary">
+        ${icon('file-up')}Enviar arquivo
+        <input type="file" class="hidden" accept=".md,.markdown,.txt,text/markdown,text/plain" @change=${props.onUpload} />
+      </label>
+      <button class="btn btn-outline btn-sm btn-primary" @click=${props.onOpenPasteEditor}>${icon('clipboard-pen-line')}Colar e editar</button>
+    </div>
+
 
     <div class="flex flex-col gap-2">
       ${repeat(

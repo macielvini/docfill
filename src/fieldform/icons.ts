@@ -1,10 +1,10 @@
 import { html, type TemplateResult } from 'lit-html';
-import { createIcons, Trash2, PencilLine, Check, FileUp, ClipboardPenLine, TextCursorInput } from 'lucide';
+import { createIcons, Trash2, PencilLine, Check, FileUp, ClipboardPenLine, TextCursorInput, ArrowLeft } from 'lucide';
 
 
 export const renderIcons = () => createIcons({
   icons: {
-    Trash2, PencilLine, Check, FileUp, ClipboardPenLine, TextCursorInput
+    Trash2, PencilLine, Check, FileUp, ClipboardPenLine, TextCursorInput, ArrowLeft
   }
 })
 

@@ -7,6 +7,7 @@ export interface TemplateDetailScreenProps {
   template: Template
   entries: HistoryEntry[]
   onStartNew: (t: Template) => void
+  onEditTemplate: (t: Template) => void
   onOpenHistory: (h: HistoryEntry) => void
   onRemoveHistory: (id: string) => void
   onBack: () => void
@@ -18,7 +19,10 @@ export function templateDetailScreen(props: TemplateDetailScreenProps): Template
     <button class="btn btn-ghost btn-sm -ml-2 w-fit gap-1" @click=${props.onBack}>← Voltar</button>
     <h1 class="text-[22px] font-bold tracking-tight">${t.title}</h1>
 
-    <button class="btn btn-primary" @click=${() => props.onStartNew(t)}>Preencher</button>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" @click=${() => props.onStartNew(t)}>Preencher novo</button>
+      <button class="btn btn-ghost" @click=${() => props.onEditTemplate(t)}>Editar modelo</button>
+    </div>
 
     <div class="flex flex-col gap-2">
       <div class="text-[11px] font-bold tracking-wide text-base-content/60 uppercase">Preenchimentos anteriormente (${entries.length}/20)</div>

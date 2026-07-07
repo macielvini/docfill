@@ -18,11 +18,12 @@ import { TYPE_LABELS, CUR_SYM, type FieldView, type FillItem } from './component
 import { templatesScreen } from './screens/templates-screen'
 import { templateDetailScreen } from './screens/template-detail-screen'
 import { docScreen, type Step } from './screens/doc-screen'
+import { pasteEditorScreen } from './screens/paste-editor-screen'
 import { confirmModal } from './components/confirm-modal'
 import { uploadModal } from './components/upload-modal'
 import { renderIcons } from './icons'
 
-type Screen = 'templates' | 'detail' | 'doc'
+type Screen = 'templates' | 'detail' | 'doc' | 'paste-editor'
 
 interface AppState {
   screen: Screen
@@ -41,6 +42,9 @@ interface AppState {
   printCompact: boolean
   uploadModalOpen: boolean
   editingTemplateId: string | null
+  pasteEditorTemplateId: string | null
+  pasteEditorTitle: string
+  pasteEditorText: string
 }
 
 function firstTitleValue(docText: string, values: Values): string {
@@ -78,6 +82,9 @@ export function mount(rootEl: HTMLElement) {
     printCompact: false,
     uploadModalOpen: false,
     editingTemplateId: null,
+    pasteEditorTemplateId: null,
+    pasteEditorTitle: '',
+    pasteEditorText: '',
   }
   let sigHost: SignaturePadHost
 
@@ -218,6 +225,30 @@ export function mount(rootEl: HTMLElement) {
         if (text.trim()) createTemplateFromText(text, null)
       })
       .catch(() => {})
+  }
+
+  function openPasteEditor() {
+    setState({ pasteEditorTemplateId: null, pasteEditorTitle: '' })
+    void navigator.clipboard
+      .readText()
+      .then((text) => setState({ screen: 'paste-editor', pasteEditorText: text }))
+      .catch(() => setState({ screen: 'paste-editor', pasteEditorText: '' }))
+  }
+
+  function editTemplate(t: Template) {
+    setState({ screen: 'paste-editor', pasteEditorTemplateId: t.id, pasteEditorTitle: t.title, pasteEditorText: t.docText })
+  }
+
+  function goBackFromPasteEditor() {
+    setState({ screen: state.pasteEditorTemplateId ? 'detail' : 'templates' })
+  }
+
+  function savePastedTemplate(title: string, text: string) {
+    const existing = state.pasteEditorTemplateId ? state.templates.find((x) => x.id === state.pasteEditorTemplateId) : null
+    const t: Template = existing
+      ? { ...existing, title, docText: text }
+      : { id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title, docText: text, createdAt: Date.now() }
+    void putTemplate(t).then((templates) => setState({ templates: [...BUILTIN_TEMPLATES, ...templates], screen: existing ? 'detail' : 'templates' }))
   }
 
   const doPrint = () => window.print()
@@ -368,7 +399,8 @@ export function mount(rootEl: HTMLElement) {
             ? templatesScreen({
                 templates: state.templates,
                 history: state.history,
-                onOpenUploadModal: () => setState({ uploadModalOpen: true }),
+                onUpload,
+                onOpenPasteEditor: openPasteEditor,
                 onSelectTemplate: selectTemplate,
                 onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
                 editingTemplateId: state.editingTemplateId,
@@ -384,7 +416,8 @@ export function mount(rootEl: HTMLElement) {
                   return templatesScreen({
                     templates: state.templates,
                     history: state.history,
-                    onOpenUploadModal: () => setState({ uploadModalOpen: true }),
+                    onUpload,
+                    onOpenPasteEditor: openPasteEditor,
                     onSelectTemplate: selectTemplate,
                     onRemoveTemplate: (id) => setState({ confirmRemoveTemplateId: id }),
                     editingTemplateId: state.editingTemplateId,
@@ -396,6 +429,7 @@ export function mount(rootEl: HTMLElement) {
                   template: t,
                   entries: state.history.filter((h) => h.templateId === t.id),
                   onStartNew: startNew,
+                  onEditTemplate: editTemplate,
                   onOpenHistory: (h) => openDoc(h.docText, h.values, h.id, h.fallbackTitle, h.templateId),
                   onRemoveHistory: removeHistory,
                   onBack: goTemplates,
@@ -427,6 +461,14 @@ export function mount(rootEl: HTMLElement) {
                 onAdvanceSignModal,
                 onRequestClearSignatures: () => setState({ confirmClearSignatures: true }),
                 onTogglePrintCompact: () => setState({ printCompact: !state.printCompact }),
+              })
+            : nothing}
+          ${screen === 'paste-editor'
+            ? pasteEditorScreen({
+                initialTitle: state.pasteEditorTitle,
+                initialText: state.pasteEditorText,
+                onSave: savePastedTemplate,
+                onBack: goBackFromPasteEditor,
               })
             : nothing}
           ${state.confirmRemoveTemplateId !== null

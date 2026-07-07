@@ -20,7 +20,12 @@ export function pasteEditorScreen(props: PasteEditorScreenProps): TemplateResult
     props.onSave(title, text)
   }
 
-  return html`<div class="flex flex-1 flex-col gap-4 p-6">
+  return html`<div
+    class="flex flex-1 flex-col gap-4 p-6"
+    ${ref((el) => {
+      if (el instanceof HTMLElement) queueMicrotask(() => el.isConnected && window.scrollTo(0, document.body.scrollHeight))
+    })}
+  >
     <div class="flex items-center gap-2">
       <button class="btn btn-ghost btn-sm btn-square" @click=${props.onBack} title="Voltar">${icon('arrow-left')}</button>
     </div>

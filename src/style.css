@@ -1,7 +1,15 @@
 @import "tailwindcss";
 @import "tailwind-squircle2/css";
 @plugin "daisyui" {
-  themes: nord --default;
+  themes: bumblebee --default;
+}
+
+:root,
+[data-theme="bumblebee"] {
+  --color-primary: #d44f0f;
+  --color-primary-content: #fff;
+  --color-secondary: oklch(85% 0.199 91.936);
+  --color-secondary-content: oklch(42% 0.095 57.708);
 }
 
 * {

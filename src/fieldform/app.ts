@@ -377,9 +377,7 @@ export function mount(rootEl: HTMLElement) {
         <div class="relative flex w-full max-w-[560px] flex-1 flex-col">
           <div class="navbar sticky top-0 z-20 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur">
             <div class="navbar-start min-w-0 gap-2.5">
-              <div class="flex size-[26px] flex-none items-center justify-center rounded-md bg-primary">
-                <div class="h-0.5 w-2.5 bg-primary-content shadow-[0_4px_0_var(--color-primary-content),0_-4px_0_color-mix(in_oklab,var(--color-primary-content)_55%,transparent)]"></div>
-              </div>
+              <img src="${import.meta.env.BASE_URL}favicon.svg" alt="docfill" class="size-[26px] flex-none rounded-md" />
               <div class="flex min-w-0 flex-col gap-px">
                 <div class="text-[14.5px] leading-none font-bold tracking-tight">
                   docfill <span class="font-normal">- by <a class="underline" href="https://github.com/macielvini">macielvini</a></span>

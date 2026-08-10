@@ -84,7 +84,7 @@ function tableNode(info: FieldInfo, values: Values, fp: boolean, compact: boolea
   const rows = Array.isArray(values[info.slug]) ? (values[info.slug] as string[][]) : info.presetRows || []
   const hasData = rows.some((r) => Array.isArray(r) && r.some((c) => c && String(c).trim()))
   const thStyle = { textAlign: 'left', padding: fp ? (c ? '3px 6px' : '5px 9px') : '7px 10px', borderBottom: '1.5px solid ' + (fp ? '#000' : '#1c1c1a'), fontFamily: "Georgia, 'Times New Roman', serif", fontSize: fp ? (c ? '9pt' : '10.5pt') : '12.5px', fontWeight: '700', color: fp ? '#000' : '#1c1c1a' }
-  const tdStyle = { padding: fp ? (c ? '3px 6px' : '5px 9px') : '7px 10px', borderBottom: '1px solid ' + (fp ? '#000' : 'rgba(0,0,0,0.12)'), fontFamily: "Georgia, 'Times New Roman', serif", fontSize: fp ? (c ? '9.5pt' : '11pt') : '14px', color: fp ? '#111' : '#2c2c28' }
+  const tdStyle = { padding: fp ? (c ? '3px 6px' : '5px 9px') : '7px 10px', borderBottom: '1px solid ' + (fp ? '#000' : 'rgba(0,0,0,0.12)'), fontFamily: "Georgia, 'Times New Roman', serif", fontSize: fp ? (c ? '9.5pt' : '11pt') : '14px', color: fp ? '#111' : '#2c2c28', overflowWrap: 'break-word' }
 
   let bodyRows: TemplateResult[]
   if (hasData) {
@@ -97,7 +97,7 @@ function tableNode(info: FieldInfo, values: Values, fp: boolean, compact: boolea
     bodyRows = [html`<tr><td colspan=${cols.length} style=${styleMap({ ...tdStyle, color: '#9a9a92', fontStyle: 'italic' })}>Nenhum item ainda</td></tr>`]
   }
 
-  return html`<table style=${styleMap({ width: '100%', borderCollapse: 'collapse', margin: '4px 0 18px' })}>
+  return html`<table style=${styleMap({ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', margin: '4px 0 18px' })}>
     <thead>
       <tr>
         ${cols.map((c) => html`<th style=${styleMap(thStyle)}>${c}</th>`)}

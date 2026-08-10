@@ -6,6 +6,7 @@ import {
   type FieldView,
   type FillItem,
 } from "../components/field-editor";
+import { scrollToBottomFab } from "../components/scroll-to-bottom-fab";
 import { segmentedToggle } from "../components/segmented-toggle";
 import { signModal } from "../components/sign-modal";
 import { icon } from "../icons";
@@ -111,6 +112,7 @@ export function docScreen(props: DocScreenProps): TemplateResult {
                 </button>
               </div>`
             : nothing}
+          ${scrollToBottomFab()}
         </div>`
       : nothing}
     ${props.signModalIndex !== null

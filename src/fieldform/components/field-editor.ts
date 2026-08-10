@@ -1,6 +1,6 @@
 import { html, nothing, type TemplateResult } from 'lit-html'
-import { repeat } from 'lit-html/directives/repeat.js'
 import { live } from 'lit-html/directives/live.js'
+import { repeat } from 'lit-html/directives/repeat.js'
 import type { FieldInfo } from '../markers'
 import { signaturePad, type SignaturePadHost } from '../signature-pad'
 import { card } from './card'
@@ -18,8 +18,6 @@ export const TYPE_LABELS: Record<string, string> = {
   currency: 'Valor',
   formula: 'Cálculo',
 }
-
-export const CUR_SYM: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€', GBP: '£', ARS: '$', CLP: '$' }
 
 export interface TableCellView {
   value: string
@@ -48,7 +46,6 @@ export interface FieldView extends FieldInfo {
   isCurrency: boolean
   isFormula: boolean
   formulaResult: string
-  currencyPrefix: string
   onChange: (e: Event) => void
   setYes: () => void
   setNo: () => void
@@ -100,7 +97,7 @@ export function fieldEditor(f: FieldView, sigHost: SignaturePadHost): TemplateRe
       : nothing}
     ${f.isCurrency
       ? html`<label class="input w-full">
-          <span class="text-base-content/60">${f.currencyPrefix}</span>
+          <span class="text-base-content/60">R$</span>
           <input type="text" inputmode="decimal" .value=${live(f.value)} @change=${f.onChange} placeholder="0,00" />
         </label>`
       : nothing}

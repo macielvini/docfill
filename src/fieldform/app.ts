@@ -1,27 +1,27 @@
-import { html, render, nothing, type TemplateResult } from 'lit-html'
-import { MarkerEngine, getFieldsFrom, getOutline, type FieldInfo, type Values } from './markers'
-import { renderDoc } from './render-doc'
-import type { SignaturePadHost } from './signature-pad'
+import { html, nothing, render, type TemplateResult } from 'lit-html'
+import { confirmModal } from './components/confirm-modal'
+import { TYPE_LABELS, type FieldView, type FillItem } from './components/field-editor'
+import { uploadModal } from './components/upload-modal'
 import {
-  loadHistory,
-  putHistoryEntry,
-  removeHistoryEntry,
-  loadTemplates,
-  putTemplate,
-  removeTemplate as removeTemplateEntry,
   firstHeading,
+  loadHistory,
+  loadTemplates,
+  putHistoryEntry,
+  putTemplate,
+  removeHistoryEntry,
+  removeTemplate as removeTemplateEntry,
   type HistoryEntry,
   type Template,
 } from './history'
+import { renderIcons } from './icons'
+import { MarkerEngine, getFieldsFrom, getOutline, type FieldInfo, type Values } from './markers'
+import { renderDoc } from './render-doc'
 import { BUILTIN_TEMPLATES } from './sample'
-import { TYPE_LABELS, CUR_SYM, type FieldView, type FillItem } from './components/field-editor'
-import { templatesScreen } from './screens/templates-screen'
-import { templateDetailScreen } from './screens/template-detail-screen'
 import { docScreen, type Step } from './screens/doc-screen'
 import { pasteEditorScreen } from './screens/paste-editor-screen'
-import { confirmModal } from './components/confirm-modal'
-import { uploadModal } from './components/upload-modal'
-import { renderIcons } from './icons'
+import { templateDetailScreen } from './screens/template-detail-screen'
+import { templatesScreen } from './screens/templates-screen'
+import type { SignaturePadHost } from './signature-pad'
 
 type Screen = 'templates' | 'detail' | 'doc' | 'paste-editor'
 
@@ -346,7 +346,6 @@ export function mount(rootEl: HTMLElement) {
       isCurrency: info.type === 'currency',
       isFormula: info.type === 'formula',
       formulaResult: info.type === 'formula' ? engine.formulaText(info) || '—' : '',
-      currencyPrefix: CUR_SYM[(info.options && info.options[0]) || 'BRL'] || (info.options && info.options[0]) || 'R$',
       setYes: () => setValue(info.slug, 'true'),
       setNo: () => setValue(info.slug, 'false'),
       onChange: (e: Event) => setValue(info.slug, (e.target as HTMLInputElement).value),
@@ -413,10 +412,10 @@ export function mount(rootEl: HTMLElement) {
 
     return html`
       <div class="app-shell flex min-h-screen flex-col items-center bg-base-200 text-base-content">
-        <div class="relative flex w-full max-w-[560px] flex-1 flex-col">
+        <div class="relative flex w-full max-w-140 flex-1 flex-col">
           <div class="navbar sticky top-0 z-20 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur">
             <div class="navbar-start min-w-0 gap-2.5">
-              <img src="${import.meta.env.BASE_URL}favicon.svg" alt="docfill" class="size-[26px] flex-none rounded-md" />
+              <img src="${import.meta.env.BASE_URL}favicon.svg" alt="docfill" class="size-6.5 flex-none rounded-md" />
               <div class="flex min-w-0 flex-col gap-px">
                 <div class="text-[14.5px] leading-none font-bold tracking-tight">
                   docfill <span class="font-normal">- by <a class="underline" href="https://github.com/macielvini">macielvini</a></span>
@@ -426,9 +425,6 @@ export function mount(rootEl: HTMLElement) {
             </div>
             <div class="navbar-end flex-none gap-2">
               ${screen !== 'templates' ? html`<button class="btn btn-ghost btn-sm" @click=${goTemplates}>Modelos</button>` : nothing}
-              ${screen === 'doc'
-                ? html`<button class="btn btn-ghost btn-sm" @click=${() => setState({ uploadModalOpen: true })}>Enviar</button>`
-                : nothing}
             </div>
           </div>
 

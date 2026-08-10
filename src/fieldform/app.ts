@@ -58,6 +58,14 @@ function titleOf(docText: string, values: Values, fallback: string | null): stri
   return titlePart
 }
 
+function docFileTitle(docText: string, values: Values): string {
+  return firstTitleValue(docText, values) || firstHeading(docText) || 'Documento sem título'
+}
+
+function sanitizeFileName(name: string): string {
+  return name.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() || 'documento'
+}
+
 function baseRows(values: Values, slug: string, presets: string[][] | null): string[][] {
   const cur = values[slug]
   return Array.isArray(cur) ? (cur as string[][]).map((x) => x.slice()) : (presets || []).map((x) => x.slice())
@@ -79,7 +87,7 @@ export function mount(rootEl: HTMLElement) {
     signModalIndex: null,
     confirmRemoveTemplateId: null,
     confirmClearSignatures: false,
-    printCompact: false,
+    printCompact: true,
     uploadModalOpen: false,
     editingTemplateId: null,
     pasteEditorTemplateId: null,
@@ -253,6 +261,37 @@ export function mount(rootEl: HTMLElement) {
 
   const doPrint = () => window.print()
 
+  async function makePdf() {
+    const { buildPdf } = await import('./pdf-doc')
+    return buildPdf(state.docText, state.values, state.printCompact)
+  }
+
+  const doDownloadPdf = async () => {
+    const pdf = await makePdf()
+    await pdf.download(sanitizeFileName(docFileTitle(state.docText, state.values)) + '.pdf')
+  }
+
+  const doSharePdf = async () => {
+    const fileName = sanitizeFileName(docFileTitle(state.docText, state.values)) + '.pdf'
+    const pdf = await makePdf()
+    const blob = await pdf.getBlob()
+    const file = new File([blob], fileName, { type: 'application/pdf' })
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: fileName })
+      } catch (e) {
+        if ((e as Error).name !== 'AbortError') throw e
+      }
+      return
+    }
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const onEnviarParaRevisao = () => {}
 
   const onOpenSignModal = () => setState({ signModalIndex: 0 })
@@ -364,12 +403,12 @@ export function mount(rootEl: HTMLElement) {
 
     const nextMap: Record<Step, { label: string; act: () => void }> = {
       fill: { label: 'Revisar', act: () => setState({ step: 'review' }) },
-      review: { label: 'Imprimir / Salvar PDF', act: doPrint },
+      review: { label: 'Baixar PDF', act: doDownloadPdf },
     }
     const backMap: Partial<Record<Step, Step>> = { review: 'fill' }
 
     const screen = state.screen
-    const docTitle = firstTitleValue(state.docText, state.values) || firstHeading(state.docText) || 'Documento sem título'
+    const docTitle = docFileTitle(state.docText, state.values)
     const canBack = true
 
     return html`
@@ -453,6 +492,8 @@ export function mount(rootEl: HTMLElement) {
                 onStepChange: (s) => setState({ step: s }),
                 onBack: () => (step === 'fill' ? setState({ screen: 'detail' }) : setState({ step: backMap[step] || 'fill' })),
                 onNext: nextMap[step].act,
+                onPrint: doPrint,
+                onShare: doSharePdf,
                 onEnviarParaRevisao,
                 onOpenSignModal,
                 onCancelSignModal,
